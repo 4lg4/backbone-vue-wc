@@ -1,0 +1,129 @@
+<html>
+  <head>
+      <meta charset="utf-8">
+      <title>micro-app-one demo</title>
+      <script
+  src="https://code.jquery.com/jquery-1.12.4.min.js"
+  integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+  crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.3.3/backbone-min.js"></script>
+      <script src="https://unpkg.com/vue"></script>
+      <script src="./alga-textarea.min.js"></script>
+      <script src="./alga-button.min.js"></script>
+  </head>
+  <body>
+
+  <div id="the-app">
+      <div id="app"><div>
+  <div>
+
+  <script>
+    const appTestTemplate = `
+      <alga-textarea class='textArea1' value="<%= textareaValue %>"></alga-textarea>
+      <alga-textarea class='textArea2' value="<%= textareaValue2 %>"></alga-textarea>
+      <alga-button title="<%= buttonTitle %>"></alga-button>
+
+      <hr>
+      <pre><%= JSON.stringify(this.model, null, 2) %></pre>
+    `;
+
+    const Model = Backbone.Model.extend({
+      defaults: {
+        buttonTitle: 'My Button!!',
+        textareaValue: 'My Textarea initial value!!',
+        textareaValue2: 'My Textarea2 initial value!!',
+        buttonClicks: 0,
+      },
+    });
+
+    const Textarea = Backbone.View.extend({
+      component: null,
+      template: _.template(`<alga-textarea name="<%= name %>" value="<%= value %>"></alga-textarea>`),
+      model: Backbone.Model.extend({
+        defaults: {
+          name: 'myTextarea',
+          value: 'My Textarea initial value!!',
+        },
+      }),
+      events: {
+        'input alga-textarea': 'change',
+      },
+      initialize(opt) {
+        this.model = new this.model;
+        this.model.set(opt);
+        this.render();
+        this.component = this.$('alga-textarea');
+      },
+      render() {
+        this.$el.html(this.template(this.model.toJSON()));
+        return this;
+      },
+      change(e, a, b){
+        console.log('Textarea change', e, a, b);
+        return true;
+        if (!detail) {
+          return true;
+        }
+
+        this.model.set({textareaValue: detail[0]});
+        this.render();
+      }
+    });
+
+    const App = Backbone.View.extend({
+      el: document.querySelector('#app'),
+      model: new Model,
+      template: _.template(appTestTemplate),
+      className: "app",
+      components: {},
+      events: {
+        "click alga-button":   "buttonClickHandle",
+        "input .textArea2":   "inputTextareaHandle2",
+      },
+
+      initialize: function() {
+        this.render();
+
+        this.components.textArea = new Textarea({value: 'the textarea'});
+        this.$el.append(this.components.textArea.render().$el); // inject "component"
+        // this.components.textArea = this.$('.textArea1')[0];
+        // this.components.textArea.addEventListener('input', this.inputTextareaHandle.bind(this));
+        // this.components.textArea2 = this.$('.textArea2');
+        // // this.listenTo(this.components.textArea, 'input', _.bind(this.inputTextareaHandle, this));
+        // this.components.textArea[0].addEventListener('input', _.bind(this.inputTextareaHandle, this));
+      },
+
+      render: function() {
+        this.$el.html(this.template(this.model.toJSON()));
+        // this.$el.html();
+        return this;
+      },
+
+      buttonClickHandle: function() {
+        console.log('buttonClickHandle');
+        this.model.buttonClicks ++;
+        this.render();
+      },
+
+      inputTextareaHandle: function({detail}) {
+        console.log('inputTextareaHandle', detail);
+        if (!detail) {
+          return true;
+        }
+
+        this.model.set({textareaValue: detail[0]});
+        this.render();
+      },
+
+      inputTextareaHandle2: function(e) {
+        console.log('inputTextareaHandle2', e);
+      },
+    });
+
+    app = new App();
+
+  </script>
+
+  </body>
+</html>
